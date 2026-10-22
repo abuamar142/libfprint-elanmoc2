@@ -32,7 +32,7 @@ pkgbase = libfprint-elanmoc2
 	source = elanmoc2-0c00.patch
 	source = 71-elanmoc2-04f3-0c00-power.rules
 	sha256sums = edc90e02f330a7595ceaf37f2c6ec32ed43541347fe936d3273b0bb2524fd19c
-	sha256sums = 976ea132653498972fc0b7a1569bf0545b81816207877c2344d520c53893f509
+	sha256sums = 9098e9aa5ca171289cca8e6f41ed9b3926ccd6689b29f81ee572a06ce4d7037c
 	sha256sums = 0215b49c4916f02333814f79b7f95d8a532ddb6d7359f5590da1ffd47502a324
 
 pkgname = libfprint-elanmoc2

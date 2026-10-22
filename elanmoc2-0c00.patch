@@ -30,10 +30,10 @@ index dcf2d11..1ce1afb 100644
  usb:v04F3p0C70*
 diff --git a/libfprint/drivers/elanmoc2/elanmoc2.c b/libfprint/drivers/elanmoc2/elanmoc2.c
 new file mode 100644
-index 0000000..ed17447
+index 0000000..d332ec9
 --- /dev/null
 +++ b/libfprint/drivers/elanmoc2/elanmoc2.c
-@@ -0,0 +1,1108 @@
+@@ -0,0 +1,1120 @@
 +/*
 + * Driver for ELAN Match-On-Chip sensors
 + * Copyright (C) 2021-2023 Davide Depau <davide@depau.eu>
@@ -158,8 +158,20 @@ index 0000000..ed17447
 +  transfer_in->short_is_error = TRUE;
 +
 +  fpi_usb_transfer_fill_bulk (transfer_in, cmd->ep_in, cmd->in_len);
++
++  /* Cancellable commands are the ones that wait for the user: identify and
++   * enroll block until a finger arrives. A fixed timeout here makes that wait
++   * fail with "transfer timed out" whenever the finger comes late -- after a
++   * lock screen has been up for a while, or simply because the user took a
++   * moment to reach the sensor. fprintd then retries and reports
++   * "too many attempts", even though nothing was ever scanned.
++   *
++   * Pass 0 (no timeout) and let the cancellable be the only way out, which is
++   * exactly what the upstream elanmoc driver does for its finger-waiting
++   * commands. Quick commands keep the bounded timeout so a wedged device is
++   * still reported instead of hanging forever. */
 +  fpi_usb_transfer_submit (transfer_in,
-+                           ELANMOC2_USB_RECV_TIMEOUT,
++                           cmd->cancellable ? 0 : ELANMOC2_USB_RECV_TIMEOUT,
 +                           cmd->cancellable ? fpi_device_get_cancellable (device) : NULL,
 +                           elanmoc2_cmd_usb_receive_callback,
 +                           NULL);

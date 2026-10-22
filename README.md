@@ -68,6 +68,17 @@ Untuk memakai 7 byte, ubah satu baris di `elanmoc2-0c00.patch`:
 
 lalu perbarui `sha256sums` di `PKGBUILD` dan jalankan `makepkg --printsrcinfo > .SRCINFO`.
 
+## Lock screen lama → "too many attempts"
+
+Driver asli memberi timeout tetap 10 detik pada transfer yang **menunggu
+jari**. Kalau jari belum menempel, transfer dibatalkan (`transfer timed out`),
+fprintd mengulang 3×, lalu Noctalia menampilkan "too many attempts" —
+padahal tidak ada yang pernah dipindai.
+
+Patch di repo ini membuat command yang menunggu pengguna (`identify`,
+`enroll`) memakai timeout 0 dan berhenti hanya lewat `cancellable`, sama
+seperti driver `elanmoc` di upstream. Command cepat tetap dibatasi 10 detik.
+
 ## Verifikasi
 
 ```
