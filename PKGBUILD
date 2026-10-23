@@ -13,7 +13,7 @@
 
 pkgname=libfprint-elanmoc2
 pkgver=1.94.100
-pkgrel=1
+pkgrel=2
 pkgdesc="Library for fingerprint readers, with the elanmoc2 driver for ELAN Match-on-Chip (04f3:0c00/0c4c/0c5e)"
 arch=(x86_64)
 url="https://fprint.freedesktop.org/"
@@ -27,11 +27,9 @@ conflicts=(libfprint)
 replaces=(libfprint)
 groups=(fprint)
 source=("https://gitlab.freedesktop.org/libfprint/libfprint/-/archive/v${pkgver}/libfprint-v${pkgver}.tar.gz"
-        "elanmoc2-0c00.patch"
-        "71-elanmoc2-04f3-0c00-power.rules")
+        "elanmoc2-0c00.patch")
 sha256sums=('edc90e02f330a7595ceaf37f2c6ec32ed43541347fe936d3273b0bb2524fd19c'
-            '9098e9aa5ca171289cca8e6f41ed9b3926ccd6689b29f81ee572a06ce4d7037c'
-            '0215b49c4916f02333814f79b7f95d8a532ddb6d7359f5590da1ffd47502a324')
+            '9098e9aa5ca171289cca8e6f41ed9b3926ccd6689b29f81ee572a06ce4d7037c')
 
 prepare() {
   cd "libfprint-v${pkgver}"
@@ -63,12 +61,6 @@ check() {
 package() {
   cd "libfprint-v${pkgver}"
   meson install -C build --destdir "$pkgdir"
-
-  # Sensor ini masuk daftar "known unsupported" pada hwdb autosuspend,
-  # sehingga udev menyetel power/control=auto. Aturan ini mengembalikannya
-  # ke "on" karena sensor tidak selalu bangun dari autosuspend.
-  install -Dm644 "${srcdir}/71-elanmoc2-04f3-0c00-power.rules" \
-    "$pkgdir/usr/lib/udev/rules.d/71-elanmoc2-04f3-0c00-power.rules"
 
   install -Dm644 "${srcdir}/elanmoc2-0c00.patch" \
     "$pkgdir/usr/share/doc/${pkgname}/elanmoc2-0c00.patch"

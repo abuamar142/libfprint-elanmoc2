@@ -68,16 +68,20 @@ Untuk memakai 7 byte, ubah satu baris di `elanmoc2-0c00.patch`:
 
 lalu perbarui `sha256sums` di `PKGBUILD` dan jalankan `makepkg --printsrcinfo > .SRCINFO`.
 
-## Lock screen lama → "too many attempts"
+## Perbaikan dibanding driver asli
 
-Driver asli memberi timeout tetap 10 detik pada transfer yang **menunggu
-jari**. Kalau jari belum menempel, transfer dibatalkan (`transfer timed out`),
-fprintd mengulang 3×, lalu Noctalia menampilkan "too many attempts" —
-padahal tidak ada yang pernah dipindai.
+1. **Timeout 10 detik pada `cmd_identify`.** Driver asli memberi transfer IN
+   yang menunggu jari sebuah timeout tetap 10 detik. Kalau jari belum menempel,
+   transfer dibatalkan, fprintd mencatat `transfer timed out`, lalu lock screen
+   mengulang 3× — habis ~30 detik tanpa memindai apa pun dan muncul
+   "too many attempts". Sekarang command yang menunggu pengguna (`identify`,
+   `enroll`) memakai timeout 0 dan berhenti hanya lewat `cancellable`, persis
+   pola driver `elanmoc` di upstream. Command cepat tetap 10 detik supaya device
+   yang macet tetap dilaporkan.
 
-Patch di repo ini membuat command yang menunggu pengguna (`identify`,
-`enroll`) memakai timeout 0 dan berhenti hanya lewat `cancellable`, sama
-seperti driver `elanmoc` di upstream. Command cepat tetap dibatasi 10 detik.
+2. **Tanpa rule udev autosuspend.** Versi awal paket ini memaksa
+   `power/control=on` untuk sensor. Rule itu terbukti tidak menyelesaikan
+   masalah timeout di atas, jadi dihapus; sensor dibiarkan autosuspend.
 
 ## Verifikasi
 
@@ -86,15 +90,18 @@ meson test -Ddrivers=all  ->  98 OK / 0 fail
 ```
 
 Diuji pada libfprint v1.94.100 dan master `6f9479c3` (2026-09-02), serta pada
-hardware: enroll, verify, unlock lock screen, dan login via greetd.
+hardware: enroll, verify, dan unlock lock screen.
 
 ## Kembali ke libfprint resmi
 
 ```bash
 sudo pacman -Rdd libfprint-elanmoc2
 sudo pacman -S libfprint
-sudo rm /usr/lib/udev/rules.d/71-elanmoc2-04f3-0c00-power.rules
 ```
+
+Instalasi lama (sebelum rule udev dihapus) juga meninggalkan
+`/usr/lib/udev/rules.d/71-elanmoc2-04f3-0c00-power.rules`; hapus manual kalau
+masih ada.
 
 Template sidik jari tersimpan di chip sensor, tidak ikut terhapus.
 
